@@ -1,0 +1,22 @@
+{
+  "name": "run-browser",
+  "version": "0.0.0",
+  "description": "The simplest way to run testling type tests in the browser",
+  "bin": "./bin/cli.js",
+  "keywords": [],
+  "dependencies": {
+    "browserify": "~3.18.0"
+  },
+  "devDependencies": {
+    "linify": "*"
+  },
+  "scripts": {
+    "prepublish": "linify transform ./bin"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ForbesLindesay/run-browser.git"
+  },
+  "author": "ForbesLindesay",
+  "license": "MIT"
+}
