@@ -2,7 +2,6 @@
 
 'use strict'
 
-var path = require('path');
 var runbrowser = require('../');
 
 var args = process.argv.slice(2);
@@ -37,6 +36,6 @@ if (help) {
   process.exit(args.length === 1 ? 0 : 1);
 }
 
-var server = runbrowser(path.resolve(filename));
+var server = runbrowser(filename);
 server.listen(port);
 console.log('Open a browser and navigate to "http://localhost:' + port + '"');
