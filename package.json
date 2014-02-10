@@ -1,11 +1,11 @@
 {
   "name": "run-browser",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "The simplest way to run testling type tests in the browser",
   "bin": "./bin/cli.js",
   "keywords": [],
   "dependencies": {
-    "browserify": "~3.18.0",
+    "browserify": "~3.28.0",
     "glob": "~3.2.7"
   },
   "devDependencies": {
