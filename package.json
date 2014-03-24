@@ -6,7 +6,8 @@
   "keywords": [],
   "dependencies": {
     "browserify": "~3.28.0",
-    "glob": "~3.2.7"
+    "glob": "~3.2.7",
+    "minimist": "0.0.8"
   },
   "devDependencies": {
     "linify": "*"

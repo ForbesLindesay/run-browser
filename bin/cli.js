@@ -1,30 +1,15 @@
 #!/usr/bin/env node
 
-'use strict'
+'use strict';
 
 var runbrowser = require('../');
+var parseArgs = require('minimist');
 
-var args = process.argv.slice(2);
+var args = parseArgs(process.argv.slice(2));
 
-var filename;
-var port = 3000;
-var help = false;
-
-if (args.length === 1 && args[0] !== '--help' && args[0] !== '-h') {
-  filename = args[0];
-} else if (args.length === 3) {
-  if (args[0] === '-p') {
-    port = args[1];
-    filename = args[2];
-  } else if (args[1] === '-p') {
-    port = args[2];
-    filename = args[0];
-  } else {
-    help = true;
-  }
-} else {
-  help = true;
-}
+var filename = args._[0];
+var port = Number(args.p || args.port) || 3000;
+var help = args.help || args.h || args._.length === 0;
 
 if (help) {
   console.log('Usage:');
