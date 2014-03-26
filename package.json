@@ -11,7 +11,7 @@
     "phantomjs": "~1.9.7-1"
   },
   "devDependencies": {
-    "linify": "*"
+    "linify": "^1.0.1"
   },
   "scripts": {
     "prepublish": "linify transform ./bin"
