@@ -4,8 +4,8 @@
 
 var parseArgs = require('minimist');
 
-var runPhantom = require('./run-phantom.js');
-var runbrowser = require('../');
+var runPhantom = require('../lib/run-phantom.js');
+var runbrowser = require('../index.js');
 
 var args = parseArgs(process.argv.slice(2));
 
@@ -33,16 +33,17 @@ server.listen(port);
 if (!phantom) {
   console.log('Open a browser and navigate to "http://localhost:' + port + '"');
 } else {
-  runPhantom(port, function (err, stdout, stderr) {
-    if (stderr) process.stderr.write(stderr);
-    if (stdout) process.stdout.write(stdout);
+  runPhantom('http://localhost:' + port + '/',
+    function (err, res) {
+      if (err) {
+        console.error(err);
+        throw err;
+      }
 
-    if (err && err.code !== 63) {
-      console.error(err);
-      throw err;
-    }
+      if (res.stderr) process.stderr.write(res.stderr);
+      if (res.stdout) process.stdout.write(res.stdout);
 
-    process.exit(err ? 1 : 0);
-  });
+      process.exit(res.passed ? 0: 1);
+    });
 }
 

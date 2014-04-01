@@ -8,7 +8,8 @@
     "browserify": "^3.28.0",
     "glob": "~3.2.7",
     "minimist": "0.0.8",
-    "phantomjs": "~1.9.7-1"
+    "phantomjs": "~1.9.7-1",
+    "tap-finished": "0.0.1"
   },
   "devDependencies": {
     "linify": "^1.0.1"
