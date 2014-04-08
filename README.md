@@ -14,6 +14,11 @@ The simplest way to run testling type tests in the browser
 
     run-browser tests/test.js
 
+Options:
+
+    -p --port <number> The port number to run the server on (default: 3000)
+    -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)
+
 ## API Usage
 
 Basic usage:

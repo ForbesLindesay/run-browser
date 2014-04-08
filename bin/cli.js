@@ -4,7 +4,6 @@
 
 var parseArgs = require('minimist');
 
-var runPhantom = require('../lib/run-phantom.js');
 var runbrowser = require('../index.js');
 
 var args = parseArgs(process.argv.slice(2));
@@ -15,14 +14,15 @@ var help = args.help || args.h || args._.length === 0;
 var phantom = args.b || args.phantom || args.phantomjs;
 
 if (help) {
+  console.log();
   console.log('Usage:');
   console.log();
   console.log('  run-browser test-file.js');
   console.log();
-  console.log('  run-browser test-file.js -p 3000');
+  console.log('options:');
   console.log();
-  console.log('For phanthomjs usage use -b');
-  console.log('  run-browser test-file.js -b');
+  console.log('  -p --port <number> The port number to run the server on (default: 3000)');
+  console.log('  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)');
   console.log('');
   process.exit(process.argv.length === 3 ? 0 : 1);
 }
@@ -33,7 +33,7 @@ server.listen(port);
 if (!phantom) {
   console.log('Open a browser and navigate to "http://localhost:' + port + '"');
 } else {
-  runPhantom('http://localhost:' + port + '/',
+  runbrowser.runPhantom('http://localhost:' + port + '/',
     function (err, res) {
       if (err) {
         console.error(err);
