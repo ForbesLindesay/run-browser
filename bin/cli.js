@@ -1,30 +1,18 @@
 #!/usr/bin/env node
 
-'use strict'
+'use strict';
 
-var runbrowser = require('../');
+var parseArgs = require('minimist');
 
-var args = process.argv.slice(2);
+var runPhantom = require('../lib/run-phantom.js');
+var runbrowser = require('../index.js');
 
-var filename;
-var port = 3000;
-var help = false;
+var args = parseArgs(process.argv.slice(2));
 
-if (args.length === 1 && args[0] !== '--help' && args[0] !== '-h') {
-  filename = args[0];
-} else if (args.length === 3) {
-  if (args[0] === '-p') {
-    port = args[1];
-    filename = args[2];
-  } else if (args[1] === '-p') {
-    port = args[2];
-    filename = args[0];
-  } else {
-    help = true;
-  }
-} else {
-  help = true;
-}
+var filename = args._[0];
+var port = Number(args.p || args.port) || 3000;
+var help = args.help || args.h || args._.length === 0;
+var phantom = args.b || args.phantom || args.phantomjs;
 
 if (help) {
   console.log('Usage:');
@@ -33,9 +21,29 @@ if (help) {
   console.log();
   console.log('  run-browser test-file.js -p 3000');
   console.log();
-  process.exit(args.length === 1 ? 0 : 1);
+  console.log('For phanthomjs usage use -b');
+  console.log('  run-browser test-file.js -b');
+  console.log('');
+  process.exit(process.argv.length === 3 ? 0 : 1);
 }
 
 var server = runbrowser(filename);
 server.listen(port);
-console.log('Open a browser and navigate to "http://localhost:' + port + '"');
+
+if (!phantom) {
+  console.log('Open a browser and navigate to "http://localhost:' + port + '"');
+} else {
+  runPhantom('http://localhost:' + port + '/',
+    function (err, res) {
+      if (err) {
+        console.error(err);
+        throw err;
+      }
+
+      if (res.stderr) process.stderr.write(res.stderr);
+      if (res.stdout) process.stdout.write(res.stdout);
+
+      process.exit(res.passed ? 0: 1);
+    });
+}
+
