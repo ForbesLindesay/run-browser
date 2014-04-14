@@ -7,12 +7,14 @@ var path = require('path');
 var browserify = require('browserify');
 var glob = require('glob');
 
+var runPhantom = require('./lib/run-phantom.js')
 var html = fs.readFileSync(__dirname + '/lib/test-page.html', 'utf8');
 
 module.exports = createServer;
 function createServer(filename) {
   return http.createServer(createHandler(filename));
 }
+module.exports.runPhantom = runPhantom;
 module.exports.createHandler = createHandler;
 function createHandler(filename) {
   return function (req, res) {
