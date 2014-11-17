@@ -7,8 +7,11 @@
   "dependencies": {
     "browserify": "^3.28.0",
     "glob": "~3.2.7",
+    "istanbul": "^0.3.2",
+    "istanbulify": "^0.1.0",
     "minimist": "0.0.8",
     "phantomjs": "~1.9.7-1",
+    "request": "^2.48.0",
     "tap-finished": "0.0.1"
   },
   "devDependencies": {
