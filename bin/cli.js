@@ -12,6 +12,7 @@ var filename = args._[0];
 var port = Number(args.p || args.port) || 3000;
 var help = args.help || args.h || args._.length === 0;
 var phantom = args.b || args.phantom || args.phantomjs;
+var coverage = args.p || args.coverage || args.istanbul;
 
 if (help) {
   console.log();
@@ -27,7 +28,7 @@ if (help) {
   process.exit(process.argv.length === 3 ? 0 : 1);
 }
 
-var server = runbrowser(filename);
+var server = runbrowser(filename, coverage);
 server.listen(port);
 
 if (!phantom) {

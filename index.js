@@ -6,6 +6,9 @@ var inspect = require('util').inspect;
 var path = require('path');
 var browserify = require('browserify');
 var glob = require('glob');
+var istanbulify = require('istanbulify');
+var stream = require('stream');
+var PassThrough = stream.PassThrough;
 
 var runPhantom = require('./lib/run-phantom.js')
 var html = fs.readFileSync(__dirname + '/lib/test-page.html', 'utf8');
@@ -15,8 +18,9 @@ function createServer(filename) {
   return http.createServer(createHandler(filename));
 }
 module.exports.runPhantom = runPhantom;
+
 module.exports.createHandler = createHandler;
-function createHandler(filename) {
+function createHandler(filename, coverage) {
   return function (req, res) {
     if (req.url === '/') {
       res.setHeader('Content-Type', 'text/html');
@@ -35,7 +39,8 @@ function createHandler(filename) {
         }
         files = files.map(function (p) { return path.resolve(p); });
         files.unshift(__dirname + '/lib/override-log.js');
-        return browserify(files).bundle({debug: true}, function (err, src) {
+        var transform = coverage ? istanbulify || new PassThrough();
+        return browserify(files).transform(transform).bundle({debug: true}, function (err, src) {
           if (sent) return;
           sent = true;
           res.setHeader('Content-Type', 'application/javascript');
