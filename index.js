@@ -8,7 +8,6 @@ var browserify = require('browserify');
 var glob = require('glob');
 var istanbulify = require('istanbulify');
 var stream = require('stream');
-var PassThrough = stream.PassThrough;
 
 var runPhantom = require('./lib/run-phantom.js')
 var html = fs.readFileSync(__dirname + '/lib/test-page.html', 'utf8');
@@ -39,7 +38,7 @@ function createHandler(filename, coverage) {
         }
         files = files.map(function (p) { return path.resolve(p); });
         files.unshift(__dirname + '/lib/override-log.js');
-        var transform = coverage ? istanbulify || new PassThrough();
+        var transform = coverage ? istanbulify : function(file) { return new stream.PassThrough(); };
         return browserify(files).transform(transform).bundle({debug: true}, function (err, src) {
           if (sent) return;
           sent = true;
