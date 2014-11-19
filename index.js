@@ -8,38 +8,24 @@ var browserify = require('browserify');
 var glob = require('glob');
 var istanbulTransform = require('browserify-istanbul');
 var stream = require('stream');
+var JSONStream = require('jsonstream2');
+var istanbul = require('istanbul');
 
 var runPhantom = require('./lib/run-phantom.js')
 var html = fs.readFileSync(__dirname + '/lib/test-page.html', 'utf8');
 
-var coverage = false;
-
 module.exports = createServer;
-module.exports.runPhantom = function(uri, reports, cb) {
-  if (typeof reports === 'function') {
-    cb = reports;
-    reports = false;
-  }
-
-  if (reports) coverage = true;
-
-  if (typeof reports === 'boolean') reports = [ 'text' ];
-  else if (Array.isArray(reports)) reports = reports;
-  else if (typeof reports === 'string') reports = [ reports ];
-
-  runPhantom(uri, reports, cb);
-}
-
+module.exports.runPhantom = runPhantom;
 module.exports.createHandler = createHandler;
 module.exports.handles = handles;
 
-function createServer(filename, coverage) {
-  var handler = createHandler(filename, coverage);
+function createServer(filename, reports, phantom) {
+  var handler = createHandler(filename, reports, phantom);
   return http.createServer(handler);
 }
 
-function getTransform(coverage) {
-  return coverage ? istanbulTransform({
+function getTransform(reports) {
+  return reports ? istanbulTransform({
     ignore: [
       '**/node_modules/**',
       '**/test/**',
@@ -54,7 +40,12 @@ function getTransform(coverage) {
   }
 }
 
-function createHandler(filename) {
+function createHandler(filename, reports, phantom) {
+
+  if (typeof reports === 'boolean' && reports) reports = [ 'text' ];
+  else if (Array.isArray(reports)) reports = reports;
+  else if (typeof reports === 'string') reports = [ reports ];
+
   return function (req, res) {
     if (req.url === '/') {
       res.setHeader('Content-Type', 'text/html');
@@ -76,7 +67,7 @@ function createHandler(filename) {
         files.unshift(__dirname + '/lib/override-log.js');
 
         return browserify(files)
-          .transform(getTransform(coverage))
+          .transform(getTransform(reports))
           .bundle({debug: true}, onBrowserifySrc);
 
         function onBrowserifySrc(err, src) {
@@ -97,6 +88,31 @@ function createHandler(filename) {
           return path.resolve(p);
         }
       });
+    }
+    if ('/results' === req.url && req.method === 'POST') {
+      return req.pipe(JSONStream.parse('*')).once('data', function (results) {
+
+        console.log(results.consoleLog);
+
+        if (results.coverage) {
+          var collector = new istanbul.Collector();
+          var reporter = new istanbul.Reporter();
+          var sync = false;
+          collector.add(results.coverage);
+          reporter.addAll(reports);
+          reporter.write(collector, sync, done);
+        }
+        else {
+          done();
+        }
+
+        function done(err) {
+          res.statusCode === 200;
+          res.end('OK');
+          var passed = results.tap.fail.length === 0;
+          if (phantom) process.exit(res.passed ? 0 : 1);
+        }
+      })
     }
     res.statusCode = 404;
     res.end('404: Path not found');
