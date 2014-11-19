@@ -9,9 +9,11 @@
     "browserify-istanbul": "^0.1.2",
     "get-port": "^1.0.0",
     "glob": "~3.2.7",
+    "global": "^4.3.0",
     "istanbul": "^0.3.2",
     "minimist": "0.0.8",
     "phantomjs": "~1.9.7-1",
+    "process": "^0.9.0",
     "request": "^2.48.0",
     "safe-json-parse": "^2.0.0",
     "tap-finished": "0.0.1"
