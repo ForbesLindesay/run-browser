@@ -60,7 +60,7 @@ function createHandler(filename, reports, phantom) {
       return glob(filename, function (err, files) {
         if (err || files.length === 0) {
           err = err || new Error('No files found matching ' + inspect(filename));
-          return handleErr(err);
+          return handleError(err, res);
         }
         files = files.map(normalizePath);
         files.unshift(path.join(__dirname, '/lib/override-log.js'));
@@ -76,7 +76,7 @@ function createHandler(filename, reports, phantom) {
         function onBrowserifySrc(err, src) {
           if (sent) return;
           sent = true;
-          return err ? handleErr(err) : res.end(src);
+          return err ? handleError(err, res) : res.end(src);
         }
 
         function normalizePath(p) {
