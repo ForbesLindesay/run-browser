@@ -1,6 +1,6 @@
 {
   "name": "run-browser",
-  "version": "1.3.1",
+  "version": "2.0.0",
   "description": "The simplest way to run testling type tests in the browser",
   "bin": "./bin/cli.js",
   "keywords": [],
