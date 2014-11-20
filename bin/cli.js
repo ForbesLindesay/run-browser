@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 'use strict';
-
+var process = require('process');
+var console = require('console');
 var parseArgs = require('minimist');
 
 var runbrowser = require('../index.js');
@@ -12,38 +13,38 @@ var filename = args._[0];
 var port = Number(args.p || args.port) || 3000;
 var help = args.help || args.h || args._.length === 0;
 var phantom = args.b || args.phantom || args.phantomjs;
+var report = args.p || args.report || args.istanbul;
+var debug = args.d || args.debug;
 
 if (help) {
-  console.log();
-  console.log('Usage:');
-  console.log();
-  console.log('  run-browser test-file.js');
-  console.log();
-  console.log('options:');
-  console.log();
-  console.log('  -p --port <number> The port number to run the server on (default: 3000)');
-  console.log('  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)');
-  console.log('');
+  var helpText = [
+    '',
+    'Usage:',
+    '  run-browser <file> <options>',
+    '',
+    'Options:',
+    '  -p --port <number> The port number to run the server on (default: 3000)',
+    '  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)',
+    '  -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)',
+    '  -d --debug         Debug PhantomJS by printing subprocess stdout and stderr.',
+    '',
+    'Example:',
+    '  run-browser test-file.js --port 3030 --report text --report html --report=cobertura',
+    ''
+  ].join('\n');
+  console.log(helpText);
   process.exit(process.argv.length === 3 ? 0 : 1);
 }
 
-var server = runbrowser(filename);
+var server = runbrowser(filename, report, phantom);
 server.listen(port);
 
 if (!phantom) {
   console.log('Open a browser and navigate to "http://localhost:' + port + '"');
 } else {
-  runbrowser.runPhantom('http://localhost:' + port + '/',
-    function (err, res) {
-      if (err) {
-        console.error(err);
-        throw err;
-      }
-
-      if (res.stderr) process.stderr.write(res.stderr);
-      if (res.stdout) process.stdout.write(res.stdout);
-
-      process.exit(res.passed ? 0: 1);
-    });
+  var proc = runbrowser.runPhantom('http://localhost:' + port + '/');
+  if (debug) {
+    proc.stdout.pipe(process.stdout);
+    proc.stderr.pipe(process.stderr);
+  }
 }
-
