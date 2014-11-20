@@ -7,7 +7,6 @@ var path = require('path');
 var browserify = require('browserify');
 var glob = require('glob');
 var istanbulTransform = require('browserify-istanbul');
-var stream = require('stream');
 var JSONStream = require('jsonstream2');
 var istanbul = require('istanbul');
 
@@ -24,8 +23,8 @@ function createServer(filename, reports, phantom) {
   return http.createServer(handler);
 }
 
-function getTransform(reports) {
-  return reports ? istanbulTransform({
+function instrumentTransform() {
+  return istanbulTransform({
     ignore: [
       '**/node_modules/**',
       '**/test/**',
@@ -33,11 +32,7 @@ function getTransform(reports) {
       '**/run-browser/**'
     ],
     defaultIgnore: true
-  }) : pass;
-
-  function pass(file) {
-    return new stream.PassThrough();
-  }
+  });
 }
 
 function createHandler(filename, reports, phantom) {
@@ -66,9 +61,9 @@ function createHandler(filename, reports, phantom) {
         files = files.map(normalizePath);
         files.unshift(__dirname + '/lib/override-log.js');
 
-        return browserify(files)
-          .transform(getTransform(reports))
-          .bundle({debug: true}, onBrowserifySrc);
+        var b = browserify(files);
+        if (reports) b.transform(instrumentTransform());
+        return b.bundle({debug: true}, onBrowserifySrc)
 
         function onBrowserifySrc(err, src) {
           if (sent) return;
