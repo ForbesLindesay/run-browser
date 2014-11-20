@@ -35,11 +35,19 @@ function instrumentTransform() {
   });
 }
 
+function handleError(err, res) {
+  var e = JSON.stringify(err.toString());
+  res.end('document.getElementById("__testling_output").textContent = ' + 
+    e + ';console.error(' + e + ');');
+  if (err) console.error(err.stack || err.message || err);
+}
+
 function createHandler(filename, reports, phantom) {
 
   if (typeof reports === 'boolean' && reports) reports = [ 'text' ];
-  else if (Array.isArray(reports)) reports = reports;
   else if (typeof reports === 'string') reports = [ reports ];
+
+  if (reports && !Array.isArray(reports)) return new Error('Invalid reports type' + reports);
 
   return function (req, res) {
     if (req.url === '/') {
@@ -48,18 +56,14 @@ function createHandler(filename, reports, phantom) {
     }
     if ('/tests-bundle.js' === req.url) {
       var sent = false;
+      res.setHeader('Content-Type', 'application/javascript');
       return glob(filename, function (err, files) {
         if (err || files.length === 0) {
-          res.setHeader('Content-Type', 'application/javascript');
-          var e = JSON.stringify((err || 'No files found matching ' +
-            inspect(filename)).toString());
-          res.end('document.getElementById("__testling_output").textContent = ' + 
-            e + ';console.error(' + e + ');');
-          if (err) console.error(err.stack || err.message || err);
-          return;
+          err = err || new Error('No files found matching ' + inspect(filename));
+          return handleErr(err);
         }
         files = files.map(normalizePath);
-        files.unshift(__dirname + '/lib/override-log.js');
+        files.unshift(path.join(__dirname, '/lib/override-log.js'));
 
         var b = browserify(files);
         if (reports) b.transform(instrumentTransform());
@@ -68,15 +72,7 @@ function createHandler(filename, reports, phantom) {
         function onBrowserifySrc(err, src) {
           if (sent) return;
           sent = true;
-          res.setHeader('Content-Type', 'application/javascript');
-          if (err) {
-            var e = JSON.stringify(err.toString());
-            res.end('document.getElementById("__testling_output").textContent = ' + e
-                    + ';console.error(' + e + ');');
-            console.error(err.stack || err.message || err);
-          } else {
-            res.end(src);
-          }
+          return err ? handleErr(err) : res.end(src);
         }
 
         function normalizePath(p) {
@@ -87,6 +83,7 @@ function createHandler(filename, reports, phantom) {
     if ('/results' === req.url && req.method === 'POST') {
       return req.pipe(JSONStream.parse('*')).once('data', function (results) {
 
+        // print TAP results
         console.log(results.consoleLog);
 
         if (results.coverage) {
