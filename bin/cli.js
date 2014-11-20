@@ -14,6 +14,7 @@ var port = Number(args.p || args.port) || 3000;
 var help = args.help || args.h || args._.length === 0;
 var phantom = args.b || args.phantom || args.phantomjs;
 var report = args.p || args.report || args.istanbul;
+var debug = args.d || args.debug;
 
 if (help) {
   var helpText = [
@@ -25,6 +26,7 @@ if (help) {
     '  -p --port <number> The port number to run the server on (default: 3000)',
     '  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)',
     '  -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)',
+    '  -d --debug         Debug PhantomJS by printing subprocess stdout and stderr.'
     '',
     'Example:',
     '  run-browser test-file.js --port 3030 --report text --report html --report=cobertura',
@@ -40,5 +42,9 @@ server.listen(port);
 if (!phantom) {
   console.log('Open a browser and navigate to "http://localhost:' + port + '"');
 } else {
-  runbrowser.runPhantom('http://localhost:' + port + '/');
+  var proc = runbrowser.runPhantom('http://localhost:' + port + '/');
+  if (debug) {
+    proc.stdout.pipe(process.stdout);
+    proc.stderr.pipe(process.stderr);
+  }
 }

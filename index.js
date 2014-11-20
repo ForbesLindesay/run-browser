@@ -65,6 +65,10 @@ function createHandler(filename, reports, phantom) {
         files = files.map(normalizePath);
         files.unshift(path.join(__dirname, '/lib/override-log.js'));
 
+        if (phantom) {
+          files.unshift(path.join(__dirname, '/lib/phantom-function-bind-shim.js'));
+        }
+
         var b = browserify(files);
         if (reports) b.transform(instrumentTransform());
         return b.bundle({debug: true}, onBrowserifySrc)
