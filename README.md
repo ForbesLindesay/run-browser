@@ -17,7 +17,7 @@ The simplest way to run testling type tests in the browser
     Options:
       -p --port <number> The port number to run the server on (default: 3000)
       -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)
-      -c --coverage      Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)
+      -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)
 
     Example:
       run-browser test-file.js --port 3030 --report text --report html --report=cobertura
