@@ -15,6 +15,7 @@ var help = args.help || args.h || args._.length === 0;
 var phantom = args.b || args.phantom || args.phantomjs;
 var report = args.p || args.report || args.istanbul;
 var debug = args.d || args.debug;
+var timeout = args.t || args.timeout || Infinity;
 
 if (help) {
   var helpText = [
@@ -27,6 +28,7 @@ if (help) {
     '  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)',
     '  -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)',
     '  -d --debug         Debug PhantomJS by printing subprocess stdout and stderr.',
+    '  -t --timeout       Global timeout in milliseconds for tests to finish. (default: Infinity)',
     '',
     'Example:',
     '  run-browser test-file.js --port 3030 --report text --report html --report=cobertura',
@@ -36,7 +38,7 @@ if (help) {
   process.exit(process.argv.length === 3 ? 0 : 1);
 }
 
-var server = runbrowser(filename, report, phantom);
+var server = runbrowser(filename, report, phantom, timeout);
 server.listen(port);
 
 if (!phantom) {

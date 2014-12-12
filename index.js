@@ -9,6 +9,7 @@ var glob = require('glob');
 var istanbulTransform = require('browserify-istanbul');
 var JSONStream = require('jsonstream2');
 var istanbul = require('istanbul');
+var insertGlobals = require('insert-module-globals');
 
 var runPhantom = require('./lib/run-phantom.js')
 var html = fs.readFileSync(__dirname + '/lib/test-page.html', 'utf8');
@@ -18,8 +19,8 @@ module.exports.runPhantom = runPhantom;
 module.exports.createHandler = createHandler;
 module.exports.handles = handles;
 
-function createServer(filename, reports, phantom) {
-  var handler = createHandler(filename, reports, phantom);
+function createServer(filename, reports, phantom, timeout) {
+  var handler = createHandler(filename, reports, phantom, timeout);
   return http.createServer(handler);
 }
 
@@ -42,7 +43,7 @@ function handleError(err, res) {
   if (err) console.error(err.stack || err.message || err);
 }
 
-function createHandler(filename, reports, phantom) {
+function createHandler(filename, reports, phantom, timeout) {
 
   if (typeof reports === 'boolean' && reports) reports = [ 'text' ];
   else if (typeof reports === 'string') reports = [ reports ];
@@ -64,6 +65,17 @@ function createHandler(filename, reports, phantom) {
         }
         files = files.map(normalizePath);
         files.unshift(path.join(__dirname, '/lib/override-log.js'));
+        files.unshift(path.join(__dirname, '/lib/global-timeout.js'));
+
+        function inserter (file) {
+          return insertGlobals(file, {
+            vars: {
+              __testTimeout: function(row, basedir) {
+                return timeout;
+              }
+            }
+          });
+        }
 
         if (phantom) {
           files.unshift(path.join(__dirname, '/lib/phantom-function-bind-shim.js'));
@@ -71,6 +83,7 @@ function createHandler(filename, reports, phantom) {
 
         var b = browserify(files);
         if (reports) b.transform(instrumentTransform());
+        b.transform(inserter);
         return b.bundle({debug: true}, onBrowserifySrc)
 
         function onBrowserifySrc(err, src) {
