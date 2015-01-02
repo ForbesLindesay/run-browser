@@ -4,6 +4,7 @@
 var process = require('process');
 var console = require('console');
 var parseArgs = require('minimist');
+var fmt = require('util').format;
 
 var runbrowser = require('../index.js');
 
@@ -27,7 +28,6 @@ if (help) {
     '  -p --port <number> The port number to run the server on (default: 3000)',
     '  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)',
     '  -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)',
-    '  -d --debug         Debug PhantomJS by printing subprocess stdout and stderr.',
     '  -t --timeout       Global timeout in milliseconds for tests to finish. (default: Infinity)',
     '',
     'Example:',
@@ -38,15 +38,21 @@ if (help) {
   process.exit(process.argv.length === 3 ? 0 : 1);
 }
 
-var server = runbrowser(filename, report, phantom, timeout);
+var server = runbrowser(filename, report, phantom);
 server.listen(port);
 
 if (!phantom) {
   console.log('Open a browser and navigate to "http://localhost:' + port + '"');
 } else {
   var proc = runbrowser.runPhantom('http://localhost:' + port + '/');
-  if (debug) {
-    proc.stdout.pipe(process.stdout);
-    proc.stderr.pipe(process.stderr);
+  proc.stdout.pipe(process.stdout);
+  proc.stderr.pipe(process.stderr);
+
+  if (timeout < Infinity) {
+    setTimeout(function() {
+      console.log(fmt('Timeout of %dms exceeded', timeout));
+      proc.kill();
+      server.close();
+    }, timeout);
   }
 }

@@ -9,7 +9,6 @@ var glob = require('glob');
 var istanbulTransform = require('browserify-istanbul');
 var JSONStream = require('jsonstream2');
 var istanbul = require('istanbul');
-var insertGlobals = require('insert-module-globals');
 
 var runPhantom = require('./lib/run-phantom.js')
 var html = fs.readFileSync(__dirname + '/lib/test-page.html', 'utf8');
@@ -19,8 +18,8 @@ module.exports.runPhantom = runPhantom;
 module.exports.createHandler = createHandler;
 module.exports.handles = handles;
 
-function createServer(filename, reports, phantom, timeout) {
-  var handler = createHandler(filename, reports, phantom, timeout);
+function createServer(filename, reports, phantom) {
+  var handler = createHandler(filename, reports, phantom);
   return http.createServer(handler);
 }
 
@@ -65,17 +64,6 @@ function createHandler(filename, reports, phantom, timeout) {
         }
         files = files.map(normalizePath);
         files.unshift(path.join(__dirname, '/lib/override-log.js'));
-        files.unshift(path.join(__dirname, '/lib/global-timeout.js'));
-
-        function inserter (file) {
-          return insertGlobals(file, {
-            vars: {
-              __testTimeout: function(row, basedir) {
-                return timeout;
-              }
-            }
-          });
-        }
 
         if (phantom) {
           files.unshift(path.join(__dirname, '/lib/phantom-function-bind-shim.js'));
@@ -83,7 +71,6 @@ function createHandler(filename, reports, phantom, timeout) {
 
         var b = browserify(files);
         if (reports) b.transform(instrumentTransform());
-        b.transform(inserter);
         return b.bundle({debug: true}, onBrowserifySrc)
 
         function onBrowserifySrc(err, src) {
@@ -99,9 +86,6 @@ function createHandler(filename, reports, phantom, timeout) {
     }
     if ('/results' === req.url && req.method === 'POST') {
       return req.pipe(JSONStream.parse('*')).on('data', function (results) {
-
-        // print TAP results
-        console.log(results.consoleLog);
 
         if (results.coverage) {
           var collector = new istanbul.Collector();
