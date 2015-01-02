@@ -4,6 +4,7 @@
 var process = require('process');
 var console = require('console');
 var parseArgs = require('minimist');
+var fmt = require('util').format;
 
 var runbrowser = require('../index.js');
 
@@ -15,6 +16,7 @@ var help = args.help || args.h || args._.length === 0;
 var phantom = args.b || args.phantom || args.phantomjs;
 var report = args.p || args.report || args.istanbul;
 var debug = args.d || args.debug;
+var timeout = args.t || args.timeout || Infinity;
 
 if (help) {
   var helpText = [
@@ -27,6 +29,7 @@ if (help) {
     '  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)',
     '  -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)',
     '  -d --debug         Debug PhantomJS by printing subprocess stdout and stderr.',
+    '  -t --timeout       Global timeout in milliseconds for tests to finish. (default: Infinity)',
     '',
     'Example:',
     '  run-browser test-file.js --port 3030 --report text --report html --report=cobertura',
@@ -43,6 +46,15 @@ if (!phantom) {
   console.log('Open a browser and navigate to "http://localhost:' + port + '"');
 } else {
   var proc = runbrowser.runPhantom('http://localhost:' + port + '/');
+
   proc.stdout.pipe(process.stdout);
   proc.stderr.pipe(process.stderr);
+
+  if (timeout < Infinity) {
+    setTimeout(function() {
+      console.log(fmt('Timeout of %dms exceeded', timeout));
+      proc.kill();
+      server.close();
+    }, timeout);
+  }
 }
