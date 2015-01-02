@@ -42,7 +42,7 @@ function handleError(err, res) {
   if (err) console.error(err.stack || err.message || err);
 }
 
-function createHandler(filename, reports, phantom) {
+function createHandler(filename, reports, phantom, timeout) {
 
   if (typeof reports === 'boolean' && reports) reports = [ 'text' ];
   else if (typeof reports === 'string') reports = [ reports ];
@@ -85,10 +85,7 @@ function createHandler(filename, reports, phantom) {
       });
     }
     if ('/results' === req.url && req.method === 'POST') {
-      return req.pipe(JSONStream.parse('*')).once('data', function (results) {
-
-        // print TAP results
-        console.log(results.consoleLog);
+      return req.pipe(JSONStream.parse('*')).on('data', function (results) {
 
         if (results.coverage) {
           var collector = new istanbul.Collector();
