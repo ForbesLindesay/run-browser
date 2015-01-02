@@ -87,9 +87,6 @@ function createHandler(filename, reports, phantom) {
     if ('/results' === req.url && req.method === 'POST') {
       return req.pipe(JSONStream.parse('*')).once('data', function (results) {
 
-        // print TAP results
-        console.log(results.consoleLog);
-
         if (results.coverage) {
           var collector = new istanbul.Collector();
           var reporter = new istanbul.Reporter();
