@@ -43,8 +43,6 @@ if (!phantom) {
   console.log('Open a browser and navigate to "http://localhost:' + port + '"');
 } else {
   var proc = runbrowser.runPhantom('http://localhost:' + port + '/');
-  if (debug) {
-    proc.stdout.pipe(process.stdout);
-    proc.stderr.pipe(process.stderr);
-  }
+  proc.stdout.pipe(process.stdout);
+  proc.stderr.pipe(process.stderr);
 }
