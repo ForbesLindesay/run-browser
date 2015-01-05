@@ -28,7 +28,6 @@ if (help) {
     '  -p --port <number> The port number to run the server on (default: 3000)',
     '  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)',
     '  -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)',
-    '  -d --debug         Debug PhantomJS by printing subprocess stdout and stderr.',
     '  -t --timeout       Global timeout in milliseconds for tests to finish. (default: Infinity)',
     '',
     'Example:',
