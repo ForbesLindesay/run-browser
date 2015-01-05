@@ -56,4 +56,12 @@ if (!phantom) {
       server.close();
     }, timeout);
   }
+
+  if (timeout < Infinity) {
+    setTimeout(function() {
+      console.log(fmt('Timeout of %dms exceeded', timeout));
+      proc.kill();
+      server.close();
+    }, timeout);
+  }
 }
