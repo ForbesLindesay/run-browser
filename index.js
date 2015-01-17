@@ -103,7 +103,7 @@ function createHandler(filename, reports, phantom) {
           res.statusCode === 200;
           res.end('OK');
           var passed = results.tap.fail.length === 0;
-          if (phantom) process.exit(res.passed ? 0 : 1);
+          if (phantom) process.exit(passed ? 0 : 1);
         }
       })
     }
