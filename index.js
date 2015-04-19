@@ -4,6 +4,7 @@ var http = require('http');
 var fs = require('fs');
 var inspect = require('util').inspect;
 var path = require('path');
+var babelify = require('babelify');
 var browserify = require('browserify');
 var glob = require('glob');
 var istanbulTransform = require('browserify-istanbul');
@@ -18,8 +19,8 @@ module.exports.runPhantom = runPhantom;
 module.exports.createHandler = createHandler;
 module.exports.handles = handles;
 
-function createServer(filename, reports, phantom) {
-  var handler = createHandler(filename, reports, phantom);
+function createServer(filename, reports, phantom, usesBabelify) {
+  var handler = createHandler(filename, reports, phantom, usesBabelify);
   return http.createServer(handler);
 }
 
@@ -37,12 +38,12 @@ function instrumentTransform() {
 
 function handleError(err, res) {
   var e = JSON.stringify(err.toString());
-  res.end('document.getElementById("__testling_output").textContent = ' + 
+  res.end('document.getElementById("__testling_output").textContent = ' +
     e + ';console.error(' + e + ');');
   if (err) console.error(err.stack || err.message || err);
 }
 
-function createHandler(filename, reports, phantom) {
+function createHandler(filename, reports, phantom, usesBabelify) {
 
   if (typeof reports === 'boolean' && reports) reports = [ 'text' ];
   else if (typeof reports === 'string') reports = [ reports ];
@@ -70,6 +71,7 @@ function createHandler(filename, reports, phantom) {
         }
 
         var b = browserify(files);
+        if (usesBabelify) b.transform(babelify);
         if (reports) b.transform(instrumentTransform());
         return b.bundle({debug: true}, onBrowserifySrc)
 

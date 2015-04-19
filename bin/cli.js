@@ -17,6 +17,7 @@ var phantom = args.b || args.phantom || args.phantomjs;
 var report = args.p || args.report || args.istanbul;
 var debug = args.d || args.debug;
 var timeout = args.t || args.timeout || Infinity;
+var babelify = args.e || args.babelify || false;
 
 if (help) {
   var helpText = [
@@ -25,6 +26,7 @@ if (help) {
     '  run-browser <file> <options>',
     '',
     'Options:',
+    '  -e --babelify      Use babelify transformer for es6 harmony support',
     '  -p --port <number> The port number to run the server on (default: 3000)',
     '  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)',
     '  -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)',
@@ -38,7 +40,7 @@ if (help) {
   process.exit(process.argv.length === 3 ? 0 : 1);
 }
 
-var server = runbrowser(filename, report, phantom);
+var server = runbrowser(filename, report, phantom, babelify);
 server.listen(port);
 
 if (!phantom) {
