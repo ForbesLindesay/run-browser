@@ -15,6 +15,7 @@ var port = Number(args.p || args.port) || 3000;
 var help = args.help || args.h || args._.length === 0;
 var phantom = args.b || args.phantom || args.phantomjs;
 var report = args.p || args.report || args.istanbul;
+var ignore = args.i || args.ignore;
 var debug = args.d || args.debug;
 var timeout = args.t || args.timeout || Infinity;
 
@@ -29,6 +30,7 @@ if (help) {
     '  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)',
     '  -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)',
     '  -t --timeout       Global timeout in milliseconds for tests to finish. (default: Infinity)',
+    '  -i --ignore        Ignore file patterns when instrumenting code. (Use https://www.npmjs.com/package/minimatch patterns)',
     '',
     'Example:',
     '  run-browser test-file.js --port 3030 --report text --report html --report=cobertura',
@@ -38,7 +40,13 @@ if (help) {
   process.exit(process.argv.length === 3 ? 0 : 1);
 }
 
-var server = runbrowser(filename, report, phantom);
+var options = {
+  reports: report,
+  phantom: phantom,
+  ignore: ignore
+};
+
+var server = runbrowser(filename, options);
 server.listen(port);
 
 if (!phantom) {

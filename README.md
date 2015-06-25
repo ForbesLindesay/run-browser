@@ -19,6 +19,7 @@ The simplest way to run testling type tests in the browser
       -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)
       -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)
       -t --timeout       Global timeout in milliseconds for tests to finish. (default: Infinity)
+      -i --ignore        Ignore file patterns when instrumenting code. (Use https://www.npmjs.com/package/minimatch patterns)
 
     Example:
       run-browser test-file.js --port 3030 --report text --report html --report=cobertura
