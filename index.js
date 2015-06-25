@@ -9,6 +9,7 @@ var glob = require('glob');
 var istanbulTransform = require('browserify-istanbul');
 var JSONStream = require('jsonstream2');
 var istanbul = require('istanbul');
+var extend = require('xtend');
 
 var runPhantom = require('./lib/run-phantom.js')
 var html = fs.readFileSync(__dirname + '/lib/test-page.html', 'utf8');
@@ -18,19 +19,27 @@ module.exports.runPhantom = runPhantom;
 module.exports.createHandler = createHandler;
 module.exports.handles = handles;
 
-function createServer(filename, reports, phantom) {
-  var handler = createHandler(filename, reports, phantom);
+var DEFAULT_OPTIONS = {
+  phantom: false,
+  reports: undefined,
+  ignore: []
+};
+
+function createServer(filename, options) {
+  options = extend(DEFAULT_OPTIONS, options || {});
+
+  var handler = createHandler(filename, options);
   return http.createServer(handler);
 }
 
-function instrumentTransform() {
+function instrumentTransform(ignore) {
   return istanbulTransform({
-    ignore: [
+    ignore: ignore.concat([
       '**/node_modules/**',
       '**/test/**',
       '**/tests/**',
       '**/run-browser/**'
-    ],
+    ]),
     defaultIgnore: true
   });
 }
@@ -42,10 +51,17 @@ function handleError(err, res) {
   if (err) console.error(err.stack || err.message || err);
 }
 
-function createHandler(filename, reports, phantom) {
+function createHandler(filename, options) {
+  options = extend(DEFAULT_OPTIONS, options || {});
+
+  var phantom = options.phantom;
+  var reports = options.reports;
+  var ignore = options.ignore;
 
   if (typeof reports === 'boolean' && reports) reports = [ 'text' ];
   else if (typeof reports === 'string') reports = [ reports ];
+
+  if (typeof ignore === 'string') ignore = [ ignore ];
 
   if (reports && !Array.isArray(reports)) return new Error('Invalid reports type' + reports);
 
@@ -70,7 +86,7 @@ function createHandler(filename, reports, phantom) {
         }
 
         var b = browserify(files);
-        if (reports) b.transform(instrumentTransform());
+        if (reports) b.transform(instrumentTransform(ignore));
         return b.bundle({debug: true}, onBrowserifySrc)
 
         function onBrowserifySrc(err, src) {
