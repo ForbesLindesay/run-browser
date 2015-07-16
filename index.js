@@ -4,12 +4,11 @@ var http = require('http');
 var fs = require('fs');
 var inspect = require('util').inspect;
 var path = require('path');
-var browserify = require('browserify');
+var webpack = require('webpack');
 var glob = require('glob');
-var istanbulTransform = require('browserify-istanbul');
 var JSONStream = require('jsonstream2');
 var istanbul = require('istanbul');
-
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var runPhantom = require('./lib/run-phantom.js')
 var html = fs.readFileSync(__dirname + '/lib/test-page.html', 'utf8');
 
@@ -21,18 +20,6 @@ module.exports.handles = handles;
 function createServer(filename, reports, phantom) {
   var handler = createHandler(filename, reports, phantom);
   return http.createServer(handler);
-}
-
-function instrumentTransform() {
-  return istanbulTransform({
-    ignore: [
-      '**/node_modules/**',
-      '**/test/**',
-      '**/tests/**',
-      '**/run-browser/**'
-    ],
-    defaultIgnore: true
-  });
 }
 
 function handleError(err, res) {
@@ -63,17 +50,68 @@ function createHandler(filename, reports, phantom) {
           return handleError(err, res);
         }
         files = files.map(normalizePath);
-        files.unshift(path.join(__dirname, '/lib/override-log.js'));
+        files.unshift(path.join(__dirname, './lib/override-log.js'));
 
         if (phantom) {
-          files.unshift(path.join(__dirname, '/lib/phantom-function-bind-shim.js'));
+          files.unshift(path.join(__dirname, './lib/phantom-function-bind-shim.js'));
         }
 
-        var b = browserify(files);
-        if (reports) b.transform(instrumentTransform());
-        return b.bundle({debug: true}, onBrowserifySrc)
+        var resolveRoots = [
+          process.cwd(),
+          process.cwd() + '/node_modules',
+          path.resolve(__dirname, '../node_modules'),
+          path.resolve(__dirname, 'node_modules')
+        ];
 
-        function onBrowserifySrc(err, src) {
+        var loaders = [
+          {
+            test: /\.js[x]?$/,
+            loaders: ['babel-loader'],
+            exclude: /node_modules/
+          },
+          {
+            test: /\.css$/,
+            loader: ExtractTextPlugin.extract(
+              'style-loader',
+              'css-loader?modules&localIdentName=[hash:base64]'
+            ),
+            exclude: /node_modules/
+          }
+        ];
+
+        if (reports) {
+          loaders.push({
+            test: /\.js[x]?$/,
+            loader: 'transform?browserify-istanbul'
+          });
+        }
+
+        webpack({
+          plugins: [
+            new ExtractTextPlugin('output.css'),
+          ],
+          entry: files,
+          output: {
+            filename: 'bundle.js'
+          },
+          resolve: {
+            root: resolveRoots,
+          },
+          node: {
+            fs: 'empty'
+          },
+          module: {
+            loaders: loaders
+          }
+        }, function(err, stats) {
+          var json = stats.toJson({errorDetails: true});
+          json.errors.forEach(function(error) {
+            console.log(error);
+          });
+          fs.readFile(process.cwd() + '/bundle.js', 'utf8', onBundleSrc);
+        });
+
+        function onBundleSrc(err, src) {
           if (sent) return;
           sent = true;
           return err ? handleError(err, res) : res.end(src);
