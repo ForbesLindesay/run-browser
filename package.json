@@ -5,7 +5,7 @@
   "bin": "./bin/cli.js",
   "keywords": [],
   "dependencies": {
-    "browserify": "^3.28.0",
+    "browserify": "^10.2.6",
     "browserify-istanbul": "^0.1.2",
     "function-bind": "^1.0.2",
     "glob": "~3.2.7",
