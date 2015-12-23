@@ -2,8 +2,8 @@
 
 The simplest way to run testling type tests in the browser
 
-[![Dependency Status](https://img.shields.io/gemnasium/ForbesLindesay/run-browser.svg)](https://gemnasium.com/ForbesLindesay/run-browser)
-[![NPM version](https://img.shields.io/npm/v/run-browser.svg)](http://badge.fury.io/js/run-browser)
+[![Dependency Status](https://img.shields.io/david/ForbesLindesay/run-browser.svg)](https://david-dm.org/ForbesLindesay/run-browser)
+[![NPM version](https://img.shields.io/npm/v/run-browser.svg)](https://www.npmjs.com/package/run-browser)
 
 ## Installation
 
