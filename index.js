@@ -113,5 +113,7 @@ function createHandler(filename, reports, phantom) {
 }
 
 function handles(req) {
-  return req.url === '/' || req.url === '/tests-bundle.js';
+  return (req.url === '/' && req.method === 'GET') ||
+    (req.url === '/tests-bundle.js' && req.method === 'GET') ||
+    ('/results' === req.url && req.method === 'POST');
 }
