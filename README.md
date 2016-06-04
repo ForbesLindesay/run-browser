@@ -19,6 +19,8 @@ The simplest way to run testling type tests in the browser
       -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)
       -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)
       -t --timeout       Global timeout in milliseconds for tests to finish. (default: Infinity)
+      -m --mock          Include given JS file and use for handling requests to /mock*
+
 
     Example:
       run-browser test-file.js --port 3030 --report text --report html --report=cobertura
@@ -50,6 +52,19 @@ server.listen(3000);
 ```
 
 For advanced phantomjs usage, just read the source in `./bin/cli.js`
+
+## Mock server
+
+If you pass `-m localfile.js` argument, the file is expected to export a function for handling requests to `/mock*`
+
+```js
+module.exports = function (req, res) {
+    if (req.url === '/mock/no-content') {
+        res.statusCode = 204
+        res.end('')
+    }
+}
+```
 
 ## License
 

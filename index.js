@@ -18,8 +18,12 @@ module.exports.runPhantom = runPhantom;
 module.exports.createHandler = createHandler;
 module.exports.handles = handles;
 
-function createServer(filename, reports, phantom) {
-  var handler = createHandler(filename, reports, phantom);
+function createServer(filename, reports, phantom, mockserver) {
+    var mockserverHandler;
+    if(mockserver){
+        mockserverHandler = require(path.resolve('./',mockserver));
+    }
+  var handler = createHandler(filename, reports, phantom, mockserverHandler);
   return http.createServer(handler);
 }
 
@@ -37,12 +41,12 @@ function instrumentTransform() {
 
 function handleError(err, res) {
   var e = JSON.stringify(err.toString());
-  res.end('document.getElementById("__testling_output").textContent = ' + 
+  res.end('document.getElementById("__testling_output").textContent = ' +
     e + ';console.error(' + e + ');');
   if (err) console.error(err.stack || err.message || err);
 }
 
-function createHandler(filename, reports, phantom) {
+function createHandler(filename, reports, phantom, mockserverHandler) {
 
   if (typeof reports === 'boolean' && reports) reports = [ 'text' ];
   else if (typeof reports === 'string') reports = [ reports ];
@@ -106,6 +110,9 @@ function createHandler(filename, reports, phantom) {
           if (phantom) process.exit(passed ? 0 : 1);
         }
       })
+    }
+    if (mockserverHandler && '/mock' === req.url.substr(0,5)){
+        return mockserverHandler(req, res);
     }
     res.statusCode = 404;
     res.end('404: Path not found');
