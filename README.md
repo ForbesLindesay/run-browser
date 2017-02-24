@@ -1,5 +1,7 @@
 # run-browser
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/ForbesLindesay/run-browser.svg)](https://greenkeeper.io/)
+
 The simplest way to run testling type tests in the browser
 
 [![Dependency Status](https://img.shields.io/david/ForbesLindesay/run-browser.svg)](https://david-dm.org/ForbesLindesay/run-browser)
