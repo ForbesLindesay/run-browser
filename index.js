@@ -85,7 +85,7 @@ function createHandler(filename, reports, phantom) {
       });
     }
     if ('/results' === req.url && req.method === 'POST') {
-      return req.pipe(JSONStream.parse('*')).once('data', function (results) {
+      return req.pipe(JSONStream.parse('*')).on('data', function (results) {
 
         if (results.coverage) {
           var collector = new istanbul.Collector();
