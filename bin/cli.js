@@ -13,7 +13,7 @@ var args = parseArgs(process.argv.slice(2));
 var filename = args._[0];
 var port = Number(args.p || args.port) || 3000;
 var help = args.help || args.h || args._.length === 0;
-var phantom = args.b || args.phantom || args.phantomjs;
+var chrome = args.b || args.chrome || args.chrome;
 var report = args.p || args.report || args.istanbul;
 var debug = args.d || args.debug;
 var timeout = args.t || args.timeout || Infinity;
@@ -26,7 +26,7 @@ if (help) {
     '',
     'Options:',
     '  -p --port <number> The port number to run the server on (default: 3000)',
-    '  -b --phantom       Use the phantom headless browser to run tests and then exit with the correct status code (if tests output TAP)',
+    '  -b --chrome       Use the chrome headless browser to run tests and then exit with the correct status code (if tests output TAP)',
     '  -r --report        Generate coverage Istanbul report. Repeat for each type of coverage report desired. (default: text only)',
     '  -t --timeout       Global timeout in milliseconds for tests to finish. (default: Infinity)',
     '',
@@ -38,13 +38,13 @@ if (help) {
   process.exit(process.argv.length === 3 ? 0 : 1);
 }
 
-var server = runbrowser(filename, report, phantom);
+var server = runbrowser(filename, report, chrome);
 server.listen(port);
 
-if (!phantom) {
+if (!chrome) {
   console.log('Open a browser and navigate to "http://localhost:' + port + '"');
 } else {
-  var proc = runbrowser.runPhantom('http://localhost:' + port + '/');
+  var proc = runbrowser.runChrome('http://localhost:' + port + '/');
 
   proc.stdout.pipe(process.stdout);
   proc.stderr.pipe(process.stderr);

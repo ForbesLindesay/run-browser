@@ -10,16 +10,16 @@ var istanbulTransform = require('browserify-istanbul');
 var JSONStream = require('jsonstream2');
 var istanbul = require('istanbul');
 
-var runPhantom = require('./lib/run-phantom.js')
+var runChrome = require('./lib/run-chrome.js')
 var html = fs.readFileSync(__dirname + '/lib/test-page.html', 'utf8');
 
 module.exports = createServer;
-module.exports.runPhantom = runPhantom;
+module.exports.runChrome = runChrome;
 module.exports.createHandler = createHandler;
 module.exports.handles = handles;
 
-function createServer(filename, reports, phantom) {
-  var handler = createHandler(filename, reports, phantom);
+function createServer(filename, reports, chrome) {
+  var handler = createHandler(filename, reports, chrome);
   return http.createServer(handler);
 }
 
@@ -42,7 +42,7 @@ function handleError(err, res) {
   if (err) console.error(err.stack || err.message || err);
 }
 
-function createHandler(filename, reports, phantom) {
+function createHandler(filename, reports, chrome) {
 
   if (typeof reports === 'boolean' && reports) reports = [ 'text' ];
   else if (typeof reports === 'string') reports = [ reports ];
@@ -65,8 +65,8 @@ function createHandler(filename, reports, phantom) {
         files = files.map(normalizePath);
         files.unshift(path.join(__dirname, '/lib/override-log.js'));
 
-        if (phantom) {
-          files.unshift(path.join(__dirname, '/lib/phantom-function-bind-shim.js'));
+        if (chrome) {
+          files.unshift(path.join(__dirname, '/lib/chrome-function-bind-shim.js'));
         }
 
         var b = browserify(files, {debug: true});
@@ -103,7 +103,7 @@ function createHandler(filename, reports, phantom) {
           res.statusCode === 200;
           res.end('OK');
           var passed = results.tap.fail.length === 0;
-          if (phantom) process.exit(passed ? 0 : 1);
+          if (chrome) process.exit(passed ? 0 : 1);
         }
       })
     }
